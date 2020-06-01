@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="user" class="pojo.User">
+        <!--
+             无参构造
+            <property name="name" value="zhang"/>
+        -->
+
+    <!--有参构造-->
+        <!--  1.    下标赋值
+            <constructor-arg index="0" value="qing"/>
+        -->
+        <!--  2.    通过类型创建*********不建议使用
+             <constructor-arg type="java.lang.String" value="lin"/>
+        -->
+        <!--  3.    直接通过参数名
+        <constructor-arg name="name" value="张庆林"/>
+        -->
+        <constructor-arg name="name" value="张庆林"/>
+    </bean>
+
+
+
+<!--    <bean id="user1" class="pojo.User1">-->
+
+<!--&lt;!&ndash;    <constructor-arg name="name" value="张庆林"/>&ndash;&gt;-->
+<!--    </bean>-->
+
+
+
+    <!--若果添加了别名，也可以用别名-->
+
+    <!--
+        id;bean的唯一标识符，也就是相当于对象名
+
+        class:bean对象所对应的权限名：包名加类名
+
+        name：别名，可以通时取多个别名，并且等级更高
+              ****  <bean id="user1" class="pojo.User1" name="user2">
+    -->
+    <alias name="user" alias="askId"/>
+
+</beans>

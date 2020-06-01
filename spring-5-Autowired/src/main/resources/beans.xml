@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/beans/spring-aop.xsd">
+
+    <!--开启注解支持-->
+    <context:annotation-config/>
+
+    <bean id="cat" class="pojo.Cat"/>
+    <bean id="dog" class="pojo.Dog"/>
+    <bean id="people" class="pojo.People" />
+    <!--    byName
+        会自动在容器上下文查找和自己对象set方法后面的值对应的beanid    名字要唯一
+            bytype
+        会自动在容器上下文查找和自己对象属性类型相同的beanid     类型只能有一个，若果有两个dog那么就会报错
+    -->
+
+    <!--
+        在这几条命令中， <bean id="people" class="pojo.People" autowire="byName">
+        创建对象通过byname更具people中的set方法进行查找，如果bean上面有
+        people中的对应的set函数（id=set）
+        如果有cat就进行装配；
+        若当dog变为dog111（  <bean id="dog" class="pojo.Dog"/>  ————————><bean id="dog111" class="pojo.Dog"/>）
+        那么setdog将不被执行
+    -->
+    <!--
+        <bean id="people" class="pojo.People" autowire="byName">
+    -->
+    <!--
+        <bean id="people" class="pojo.People" autowire="byType">
+    -->
+
+
+    <!--
+        <property name="name" value="zhang" ></property>
+    -->
+    <!-- <property name="dog" ref="dog"></property>
+     <property name="cat" ref="cat"></property>-->
+
+
+    <!-- <bean id="cat" class="pojo.Cat"/>
+     <bean id="dog" class="pojo.Dog"/>
+     <bean id="people" class="pojo.People">
+         <property name="name" value="zhang"></property>
+         <property name="dog" ref="dog"></property>
+         <property name="cat" ref="cat"></property>
+     </bean>
+
+ -->
+</beans>
