@@ -4,3 +4,6 @@
 =======
 /workspace.xml
 >>>>>>> 5a8a85629f408fb675f9e7f759fcddab76771a74
+# Datasource local storage ignored files
+/dataSources.local.xml
+/dataSources/

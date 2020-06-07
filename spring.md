@@ -568,3 +568,599 @@ public static void main(String[] args) {
 
 
 
+## 10、 Aop
+
+代理模式（spring底层）：中介，也就是代理角色，spring是一个容器，项目将对象放到spring让其代理，所以代理模式就是spring的底层重点
+
+学习代理模式，是为了
+
+代理模式分分类：
+
+ 	1. 静态代理
+ 	2. 动态代理
+
+
+
+##### 静态代理
+
+角色分析：
+
+* 抽象角色：一般使用接口或者抽象类来解决；
+* 真实角色：被代理的角色（房东）
+* 代理角色：代理真实角色，代理真实角色后，一般会做一些辅助操作（中介）
+* 客户：访问代理对象的人（客人）
+
+
+
+##### 代理模式的好处
+
+* 可以是真实的角色操作更加纯粹，（房东只出租房子）不用关注一些公共的业务
+
+* 公共也就交给代理角色，实现了业务分工
+
+* 公共业务发生扩展的时候，方便集中管理（中介除了买房子还可以看房子，收费，签合同）
+
+  ![image-20200605185742357](C:\Users\AVE\AppData\Roaming\Typora\typora-user-images\image-20200605185742357.png)
+
+  ![image-20200605185707692](C:\Users\AVE\AppData\Roaming\Typora\typora-user-images\image-20200605185707692.png)
+
+  ![image-20200605185758180](C:\Users\AVE\AppData\Roaming\Typora\typora-user-images\image-20200605185758180.png)
+
+  ![image-20200605185817186](C:\Users\AVE\AppData\Roaming\Typora\typora-user-images\image-20200605185817186.png)
+
+
+
+缺点：一个真实角色就有一个代理角色，代码量翻倍开发效率会变低（解决，动态代理）
+
+
+
+**分工于扩展**
+
+在不修改原有功能的情况下，将其交给代理，让代理对齐功能经行扩展，（该表原有的代码是大忌）
+
+```java
+public class UserServiceImpl implements UserService {
+    /*
+    * 如果需要现价一个日志。System.out.println("使用了add方法");，就需要在每个方法里都写一个
+    * */
+    public void add() {
+        /*System.out.println("使用了add方法");*/
+        System.out.println("增加了一个用户");
+    }
+
+    public void delete() {
+//        System.out.println("使用了add方法");
+        System.out.println("删除了一个用户");
+
+    }
+
+    public void update() {
+//        System.out.println("使用了add方法");
+
+        System.out.println("修改了一个用户");
+
+    }
+
+    public void query() {
+//        System.out.println("使用了add方法");
+        System.out.println("查找了一个用户");
+    }
+}
+```
+
+```java
+public class UserServiceProxy implements UserService {
+
+    private UserServiceImpl userServiceImpl;
+
+    public void setUserServiceImpl(UserServiceImpl userServiceImpl) {
+        this.userServiceImpl = userServiceImpl;
+    }
+
+
+    public void add() {
+        log("add");
+        userServiceImpl.add();
+    }
+
+    public void delete() {
+        log("delete");
+
+        userServiceImpl.delete();
+    }
+
+    public void update() {
+        log("update");
+
+        userServiceImpl.update();
+    }
+
+    public void query() {
+        log("query");
+        userServiceImpl.query();
+    }
+    //日志方法
+    public void log(String msg){
+        System.out.println("使用了" + msg + "方法");
+    }
+
+}
+```
+
+
+
+Aop的实现机制，一个项目（dao--->service--->controller---->前端）想要添加一个功能，就在service中添加一个代理。添加功能；
+
+
+
+##### 动态代理（通过反射）
+
+简单，快速，直接以java编码形式体现，不需要了解源码
+
+* 动态代理和静态代理角色是一样的（抽象，代理，真实）
+* 动态代理是动态生成的，不是我们自己写的
+* 动态代理分为两类：基于接口  基于类
+  1. 基于接口的动态代理----JDK动态代理【我们使用】
+  2. 基于类的动态代理----cglib
+  3. java字节码实现javasist
+
+需要了解两个类：proxy（代理）  invocationHandler（处理）
+
+**invocationHandler**
+
+一个接口，在反射包下
+
+```JAVA
+ublic class ProxyInvocationHandler implements InvocationHandler {
+
+
+    //被代理的接口
+    private Object target;
+
+    public void setTarget(Object target) {
+        this.target = target;
+    }
+
+
+
+    //生成得到代理对像
+    public Object getProxy() {
+         return Proxy.newProxyInstance(this.getClass().getClassLoader(), target.getClass().getInterfaces(), this);
+        /*
+         *        该方法的使用
+         *  有三个参数
+         *  第一个ClassLoader当前类对象
+         *  第二个代理的接口
+         *  InvocationHandler，而在这里的就是继承了该接口的ProxyInvocationHandler
+         *
+         *
+         * */
+    }
+
+    //处理代理实例，并返回结果
+    /*真正生成代理类的是proxy
+    * 使用方法是，有了InvocationHandler接口直接去new一个
+    * */
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
+        //动态代理的机智就是使用反射实现
+        log(method.getName());
+        Object result = method.invoke(target, args);
+
+        return result;
+    }
+  /*  public void seeHouse(){
+        System.out.println("中介带去看房子");
+    }
+    public void free(){
+        System.out.println("中介收钱");
+    }
+
+*/
+
+    public void log(String msg){
+        System.out.println("使用了" + msg + "方法");
+    }
+}
+```
+
+```
+public class Client {
+    public static void main(String[] args) {
+        //真是角色
+        UserServiceImpl userService = new UserServiceImpl();
+        //代理角色
+        ProxyInvocationHandler proxyInvocationHandler = new ProxyInvocationHandler();
+        /*
+        *
+        * 1. 代理一个对像
+        * */
+        proxyInvocationHandler.setTarget(userService);//设置要代理的对象
+        //动态生成代理类
+        UserService proxy = (UserService) proxyInvocationHandler.getProxy();
+        proxy.add();
+        proxy.delete();
+        proxy.query();
+        proxy.update();
+    }
+}
+```
+
+动态代理的优点：
+
+* 可以是真实的角色操作更加纯粹，不用关注一些公共的业务
+* 公共也就交给代理角色，实现了业务分工
+* 公共业务发生扩展的时候，方便集中管理
+* 一个动态类代理的是一个接口，一般就是对应的一类业务
+* 一的动态代理类可以代理多个类，只要接口相同，
+
+
+
+
+
+### Aop
+
+
+
+execution()是最常用的切点函数
+
+**整个表达式可以分为五个部分：**
+
+**1、execution(): 表达式主体。**
+
+**2、第一个*号：表示返回类型， *号表示所有的类型。**
+
+**3、包名：表示需要拦截的包名，后面的两个句点表示当前包和当前包的所有子包，com.sample.service.impl包、子孙包下所有类的方法。**
+
+**4、第二个*号：表示类名，*号表示所有的类。**
+
+**5、*(..):最后这个星号表示方法名，*号表示所有的方法，后面括弧里面表示方法的参数，两个句点表示任何参数**
+
+方式一：spring的接口实现【主要是接口实现】
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+<!--注册bean-->
+    <bean id="userService" class="ave.service.UserServiceImpl"/>
+    <bean id="log" class="ave.log.Log"/>
+    <bean id="afterLog" class="ave.log.AfterLog"/>
+
+    <!--配置aop-->
+    <!--方式一：-->
+    <!--配置aop：需要导入aop的约素-->
+    <aop:config>
+        <!--
+        切入点：需要在那个地方执行我们的方法
+        expression表达式 execution（要执行的位置  ，public修饰词   ，返回值  ，类名  ，方法名  ，参数）
+        -->
+        <aop:pointcut id="pointcut" expression="execution(* ave.service..UserServiceImpl.*(..))"/>
+        <!-- * 代表任意的东西，在ave.service..UserServiceImpl类中的所有方法，中任意的参数-->
+        <!--在这个切入点中，执行Log，AfterLog方法-->
+        <!--执行环绕增强-->
+        <aop:advisor advice-ref="log" pointcut-ref="pointcut"/>
+        <!--将log这个类切入到pointcut中，也就是说将该类的方法添加到UserServiceImpl中-->
+        <!--代码固定，可以配置多个切入，将想切入的方法切入-->
+        <aop:advisor advice-ref="afterLog" pointcut-ref="pointcut"/>
+        
+
+    </aop:config>
+
+
+</beans>
+```
+
+```java
+public class Mytest {
+    public static void main(String[] args) {
+        ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+        //动态代理的是接口
+
+        UserService userService = (UserService) context.getBean("userService");
+
+         userService.add();
+    }
+}
+```
+
+第二种方式：使用自定义类实现【主要是切面定义】
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--注册bean-->
+    <bean id="userService" class="ave.service.UserServiceImpl"/>
+    <bean id="log" class="ave.log.Log"/>
+    <bean id="afterLog" class="ave.log.AfterLog"/>
+    <!--方式二 自定义类-->
+   <bean id="diy" class="ave.diy.DiyPointCut"/>
+    <aop:config>
+        <!--自定义切面，要引入的类-->
+        <aop:aspect ref="diy">
+            <!--切入点-->
+            <aop:pointcut id="point" expression="execution(* ave.service.UserServiceImpl.*(..))"/>
+            <!--通知-->
+            <aop:before method="befote" pointcut-ref="point"/>
+            <aop:after method="after" pointcut-ref="point"/>
+
+        </aop:aspect>
+    </aop:config>
+
+</beans>
+```
+
+```java
+public class DiyPointCut {
+    public void befote(){
+        System.out.println("***************方法执行前*******************");
+    }
+    public void after(){
+        System.out.println("***************方法执行后*******************");
+    }
+}
+```
+
+
+
+
+
+### 注解实现Aop
+
+```java
+public class AnnotationPointCut {
+    @Before("execution(* ave.service.UserServiceImpl.*(..))")
+    public void befote(){
+        System.out.println("***************方法执行前*******************");
+    }
+    @After("execution(* ave.service.UserServiceImpl.*(..))")
+    public void after(){
+        System.out.println("***************方法执行后*******************");
+    }
+    /* 在环绕增强中，我们可以这只一个参数，代表我们要获取处理的切入点 */
+    @Around("execution(* ave.service.UserServiceImpl.*(..))")
+    public void around(ProceedingJoinPoint joinPoint) throws Throwable{
+        System.out.println("环绕前");
+        Signature signature = joinPoint.getSignature();
+        System.out.println(signature);
+        Object proceed = joinPoint.proceed();
+        System.out.println("***************方法执行环绕*******************");
+        System.out.println(proceed);
+        System.out.println("环绕后");
+    }
+}
+```
+
+### 整合Mybatis
+
+步骤：
+
+1. 导入jar包
+   * junit
+   * mybatis
+   * mysql数据库
+   * spring相关
+   * AOP植入
+   * Mybatis-spring【整合mybatis和spring】
+2. 编写配置文件
+3. 测试
+
+
+
+
+
+### mybatis
+
+1. 编写实体类、
+
+   ```java
+   @Data//重
+   public class User {
+       private int id;
+       private String name;
+       private String password;
+       private int type;
+   
+   }
+   ```
+
+2. 编写核心配置文件
+
+   
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE configuration
+           PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+           "http://mybatis.org/dtd/mybatis-3-config.dtd">
+   <!--configuration核心配置文件-->
+   <configuration>
+       <!--别名-->
+       <typeAliases>
+           <package name="ave.pojo"/>
+       </typeAliases>
+       <!--连接数据库-->
+       <environments default="development">
+           <environment id="development">
+               <transactionManager type="JDBC" />
+               <dataSource type="POOLED">
+                   <property name="driver" value="com.mysql.jdbc.Driver" />
+                   <property name="url" value="jdbc:mysql://localhost:3306/ssms?useSSL=true&amp;useUnicode=true&amp;characterEncoding=UTF-8" />
+                   <!--添加了编码问题-->
+                   <property name="username" value="root" />
+                   <property name="password" value="812090" />
+               </dataSource>
+           </environment>
+       </environments>
+       <mappers>
+           <mapper class="ave.mapper.UserMapper"/>
+       </mappers>
+   </configuration>
+   ```
+
+3. 编写接口
+
+   
+
+   ```java
+   public interface UserMapper {
+       public List<User> selectUser();
+   }
+   ```
+
+4. 编写接口对应的.xml
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mapper
+           PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+           "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   <!--创建SQL语句-->
+   
+   <mapper namespace="ave.mapper.UserMapper">
+       <select id="selectUser" resultType="user">
+           select * from ssms.user;
+       </select>
+   
+   
+   </mapper>
+   ```
+
+5. 测试
+
+6. ```java
+   public class Mytest {
+       @Test
+       public void test() throws IOException {
+           String resource="mybatis-config.xml";/*得到路径*/
+           InputStream resourceAsStream = Resources.getResourceAsStream(resource);/*得到该路径下的资源*/
+           SqlSessionFactory build = new SqlSessionFactoryBuilder().build(resourceAsStream);/*获取SqlSessionFactory实例*/
+           /*SqlSessionFactoryMyBatis的关键对象,它是个单个数据库映射关系经过编译后的内存镜像*/
+           SqlSession sqlSession = build.openSession(true);/*得到一个执行器传入事务(Transaction)和类型(execType(枚举))*/
+           UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+           /*通过 SqlSession 的 getMapper 方法来获取一个 Mapper 接口，就可以调用它的方法了。
+           因为 XML 文件或者接口注解定义的 SQL 都可以通过“类的全限定名+方法名”查找，
+           所以 MyBatis 会启用对应的 SQL 进行运行，并返回结果。*/
+           List<User> users = mapper.selectUser();
+           for (User user : users) {
+               System.out.println(user);
+           }
+       }
+   }
+   ```
+
+
+
+
+
+### mybatis-spring类
+
+**MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中**。它将允许 MyBatis 参与到 Spring 的事务管理之中，**创建映射器 mapper 和 `SqlSession` 并注入到 bean 中**，以及将 Mybatis 的异常转换为 Spring 的 `DataAccessException`。最终，**可以做到应用代码不依赖于 MyBatis，Spring 或 MyBatis-Spring。**
+
+1. 编写数据源配置
+
+2. sqlSessionFactory
+
+3. sqlSessionTemplate
+
+   ```xml
+    <!--
+           DataSource  使用spring的数据源替换Mybatis的配置
+           这里使用spring提供的JDBC:org.springframework.jdbc.datasource
+       -->
+       <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+           <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+           <property name="url" value="jdbc:mysql://localhost:3306/ssms?useSSL=true&amp;useUnicode=true&amp;characterEncoding=UTF-8" />
+           <property name="username" value="root"/>
+           <property name="password" value="812090"/>
+   
+       </bean>
+       <!--SqlSessionFactory-->
+   
+       <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+           <property name="dataSource" ref="dataSource" />
+           <!--绑定mybatis的配置文件-->
+           <property name="configLocation" value="classpath:*.xml"/>
+           <property name="mapperLocations" value="classpath:ave/mapper/*.xml"/>
+       </bean>
+       <!--SqlSessionTemplate就是我们使用的SqlSession-->
+       <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+           <!--更具源码发现，没有set方法，所以只能使用构造器注入-->
+           <constructor-arg index="0" ref="sqlSessionFactory"/>
+       </bean>
+   
+   
+       <!--将实现类注入-->
+       <bean id="userMapper" class="ave.mapper.UserMapperImpl">
+           <property name="sqlSession" ref="sqlSession"/>
+       </bean>
+   </beans>
+   ```
+
+4. 需要给接口添加实现类
+
+   ```
+   public class UserMapperImpl implements UserMapper {
+       private SqlSessionTemplate sqlSession;
+   
+   
+   
+       /*我们所有的操作，都是用sqlSession来执行，在原来，现在都使用sqlSessionTemplate*/
+   
+       public List<User> selectUser() {
+           UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+           return mapper.selectUser();
+       }
+   
+       public void setSqlSession(SqlSessionTemplate sqlSession) {
+           this.sqlSession = sqlSession;
+       }
+   }
+   ```
+
+5. 将实现类注入spring中
+
+6. 测试
+
+7. ```
+     ApplicationContext context = new ClassPathXmlApplicationContext("spring-dao.xml");
+       UserMapper userMapper = context.getBean("userMapper", UserMapper.class);
+       for (User user : userMapper.selectUser()) {
+           System.out.println(user);
+       }
+   }
+   ```
+
+
+
+
+
+### 声明式事务
+
+1. 把一组业务当作一个业务来做，要么成功，要么失败
+2. 食物非常重要，涉及到数据一致性问题
+3. 确保了完整性和一致性
+
+
+
+事务的ACID原则
+
+* 原子性
+* 一致性
+* 各理性
+  * 多个业务操作同一个资源，防止数据损坏
+* 持久性
+  * 食物一旦提交，无论系统发生什么问题，结果都不会被影响，被持久化写到存储七中

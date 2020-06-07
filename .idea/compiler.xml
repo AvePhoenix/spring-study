@@ -6,15 +6,22 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="spring-10-mybatis" />
         <module name="spring-5-Autowired" />
         <module name="spring-1-ioc3" />
-        <module name="spring-2-helloworld" />
-        <module name="sprint-1-ioc2" />
+        <module name="spring-11-transaction" />
         <module name="spring-6-Autowired" />
+        <module name="spring-9-aop" />
+        <module name="spring-8-proxy" />
+        <module name="spring-2-helloworld" />
         <module name="spring-7-appconfig" />
+        <module name="sprint-1-ioc2" />
         <module name="spring-6-anno" />
         <module name="spring-3-di" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="spring-10-mybatis1" target="1.5" />
+    </bytecodeTargetLevel>
   </component>
 </project>

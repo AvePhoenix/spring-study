@@ -11,11 +11,10 @@
         https://www.springframework.org/schema/beans/spring-aop.xsd">
 
     <!--指定要扫描的包，这个包下的注解就会生效-->
-    <context:component-scan base-package="pojo"/>
+    <context:component-scan base-package="ave"/>
     <!--开启注解支持-->
     <context:annotation-config/>
-    <bean id="user" class="pojo.User">
-    </bean>
+
 
 
 </beans>

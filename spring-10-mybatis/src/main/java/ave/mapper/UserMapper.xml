@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--创建SQL语句-->
+
+    <mapper namespace="ave.mapper.UserMapper">
+        <select id="selectUser" resultType="user">
+            select * from ssms.user;
+        </select>
+
+
+    </mapper>
